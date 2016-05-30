@@ -122,24 +122,23 @@ window.onload = function () {
                         }, position);
 
 
+                        //修改定时器
                         function checker() {
-                            cc.log("定时器开始执行。。。还剩" + delay)
-                            --delay;
-
-                            helloLabel.setString("时间剩余：" + delay)
-                            if (task == 0) {
-                                alert("ok......")
-                                isStart = false;
-                                delay = 0;
-                                thiss.unschedule(checker);
-                                return;
-                            }
-
-                            if (delay == 0) {
-                                if (task.length > 0) {
-                                    alert("失败")
+                            var nowTime = new Date().getTime();
+                            var howLong = nowTime - thiss.startTime;
+                            helloLabel.setString("已经使用：" + howLong);
+                            if (task.length == 0) {
+                                if (howLong < 6000) {
+                                    alert("ok .....");
+                                    thiss.unschedule(checker);
                                 } else {
-                                    alert("成功！")
+                                    alert("fail....");
+                                    thiss.unschedule(checker);
+                                }
+                            } else {
+                                if (howLong > 6000) {
+                                    alert("fail....");
+                                    thiss.unschedule(checker);
                                 }
                             }
                         }
@@ -148,15 +147,13 @@ window.onload = function () {
                             event: cc.EventListener.TOUCH_ONE_BY_ONE,//单击
                             swallowTouches: true,
                             onTouchBegan: function (touch, event) {
+                                //设置开始标志位
                                 isStart = true;
-                                if (delay <= 0) {
-                                    //还原配置
-                                    delay = 5;
-                                    isStart = true;
-                                    task = taskold.slice(0, taskold.length);
-                                    cc.log("重置配置！")
-                                }
-                                thiss.schedule(checker, 1, 5, 1);
+                                //设置开始时间
+                                thiss.startTime = new Date().getTime();
+                                task = taskold.slice(0, taskold.length);
+                                //更改为每次场景更新刷新时间
+                                thiss.schedule(checker);
                             }
                         }, start);
                     }
