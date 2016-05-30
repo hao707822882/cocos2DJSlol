@@ -1,0 +1,110 @@
+好久没有更新Cocos2d-html5的博文了，这两个月忙着一些比赛，所以就耽误了，嘿嘿，不过关于这个专栏还是有很多章节要写，所以还是慢慢来更新吧。
+
+
+
+Schedule，从翻译的角度上来说就是”时间表“，差不多就是一个定时规划，在cocos2d里面使用的场景一般就是比如你想让一个精灵间隔多少次执行什么动画，或者一个场景想延迟多久进行跳转，ok，那么就应该使用这个来实现。下面简单说一下这个用法，因为这个函数是间隔执行的，所以不好展示画面，所以我就用代码和文字来说明一下。
+
+
+
+1. schedule(callback_fn, interval, repeat, delay)
+
+里面四个参数对应的含义是：
+
+callback_fn：调用的方法名
+
+interval：间隔多久再进行调用
+
+repeat：重复的次数
+
+delay：延迟多久再进行调用
+
+
+
+2. scheduleOnce(callback_fn, delay)
+
+该函数只调用一次callback_fn的方法
+
+
+
+3. scheduleUpdate()
+该函数会每一帧都调用，调用的方法名为"update"
+
+
+注：1.这里涉及到的时间单位都是”秒“！
+2.调用的方法，记得一定要有个float类型参数，说白了，就是添加个参数，javascript参数类型都是自动识别的。
+
+
+
+?
+1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+var Helloworld = cc.Layer.extend({
+
+    init:function () {
+        this._super();
+        var size = cc.Director.getInstance().getWinSize();
+
+        this.schedule(this.timeCallback,2,2,1);
+        this.scheduleOnce(this.timeCallback,2);
+        this.scheduleUpdate();
+
+
+        return true;
+    },
+
+    timeCallback:function(dt) {
+
+    },
+
+    update:function(dt){
+
+    },
+
+});
+
+schedule(callback_fn, interval, repeat, delay)这个函数，其实并不需要每次都要把四个参数都带上的，它是有重载的。
+
+
+还有另外两种形式：
+
+schedule(callback_fn) 每帧都调用一次，调用无数次，马上调用
+schedule(callback_fn, interval) 间隔interval调用一次，调用无数次，马上调用
+
+
+
+所以具体什么情况该使用什么函数，带什么参数，就要大家按需使用了。
+
+
+
+当然不仅仅只能执行定时器，我们也可以按自己的想法去随时停止我们的定时器，有这么几个方法：
+
+unschedule(callback_fn) 停止指定的定时器方法
+
+unscheduleAllCallbacks() 停止所有的定时器
+
+unscheduleUpdate() 停止update方法
+
+
+
+关于定时器内容差不多就这些了，我用处最大的感触就是比如游戏开始前有个321倒计时，这里就可以使用，或者logo显示一定时间跳转我们的主菜单界面，这些地方都可以使用定时器的。
