@@ -194,7 +194,6 @@ function MoveChecker() {
     this.logger = new BGFLogger("MoveChecker");
 
 
-
     this.check = function (action, task, taskManager) {
         //进行action与task的比对
         console.log("---Move checker")
