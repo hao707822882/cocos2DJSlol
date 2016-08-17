@@ -78,9 +78,11 @@ function EventManager() {
  */
 
 function TaskManager(task, checker) {
+    this.finish = false;
     this.task = task;
     this.doneTask = [];
     this.taskCopy = BGFUtil.clone(task.tasks);
+
 
     this.allFinishCallback = function () {
         this.logger.log("default allFinishCallback invoke........")
@@ -88,6 +90,15 @@ function TaskManager(task, checker) {
 
     this.taskFinishCallback = function (task) {
         this.logger.log("default taskFinishCallback invoke........")
+    }
+
+    this.failCallback = function () {
+        this.logger.log("default failCallback invoke........")
+    }
+
+    this.fail = function (reason) {
+        this.finish = true;
+        this.failCallback(reason);
     }
 
     //设置task finish call back
@@ -102,12 +113,22 @@ function TaskManager(task, checker) {
         return this;
     }
 
+    //设置fail call back
+    this.setFailCallback = function (fn) {
+        this.failCallback = fn;
+        return this;
+    }
+
     //获取任务
     this.getTask = function () {
         return this.taskCopy[0];
     }
     //结束一个任务
     this.finishTask = function (canDelete) {
+        if (this.finish) {
+            //如果当前已经结束，就不需要处理了
+            return;
+        }
         var temp
         if (canDelete) {
             //可删除的
@@ -116,6 +137,7 @@ function TaskManager(task, checker) {
             this.taskFinishCallback(temp);
             if (this.doneTask.length == this.task.tasks.length) {
                 this.allFinishCallback(this.doneTask)
+                this.finish = true;
             }
         }
         this.logger.log(((canDelete ? "Finish" : "unFinish") + " task " + JSON.stringify(temp ? temp : this.taskCopy[0])))
@@ -135,7 +157,7 @@ function TaskManager(task, checker) {
             return;
         }
         var task = this.getTask();
-        var checkResult = this.checkers[action.type] && this.checkers[action.type].check(action, task)
+        var checkResult = this.checkers[action.type] && this.checkers[action.type].check(action, task, this, this.task)
         this.finishTask(checkResult)
         return this;
     }
@@ -148,7 +170,10 @@ function TaskManager(task, checker) {
  * @constructor
  */
 function ClickChecker() {
-    this.check = function (action, task) {
+
+    this.logger = new BGFLogger("ClickChecker");
+
+    this.check = function (action, task, taskManager) {
         //进行action与task的比对
         console.log("---Click checker")
         if (action.data.x && action.data.y && task.data.x && task.data.y) {
@@ -165,7 +190,12 @@ function ClickChecker() {
  * @constructor
  */
 function MoveChecker() {
-    this.check = function (action, task) {
+
+    this.logger = new BGFLogger("MoveChecker");
+
+
+
+    this.check = function (action, task, taskManager) {
         //进行action与task的比对
         console.log("---Move checker")
         return true;
@@ -174,13 +204,47 @@ function MoveChecker() {
 
 /**
  * 空操作检测器
+ *
+ * 空操作分类型：beat，时间监测的监测
+ *               action，事件之后触发的，任务相关
+ *
  * @constructor
  */
 function NoopChecker() {
-    this.check = function (action, task) {
+
+    this.logger = new BGFLogger("NoopChecker");
+
+    this.check = function (action, task, taskManager, taskOrigin) {
+
+        if (!(action.data.before && action.data.now )) {
+            this.logger.log("action date missing");
+            return;
+        }
+
+        if (taskManager.finish) {
+            this.logger.log("task has finish and noop loop break");
+            return;
+        }
+
+        if (action.data.type == "action") {
+            var howLong = action.data.now - action.data.before
+            if (howLong / 1000 > task.data.continue) {
+                taskManager.fail("操作超时，失败！")
+                return false;
+            } else {
+                return true;
+            }
+        } else if (action.data.type == "beat") {
+            var howLong = action.data.now - action.data.begin
+            if (howLong / 1000 > taskOrigin.continue) {
+                taskManager.fail("总时长超时，失败！")
+                return false;
+            } else {
+                return false;
+            }
+        }
         //进行action与task的比对
         console.log("---Noop checker")
-        return true;
     }
 }
 
@@ -198,16 +262,37 @@ function BGFLogger(name) {
 
 var taskManager = new TaskManager({
     "name": '训练小游戏一',
-    tasks: [{"type": "click", data: {x: 100, y: 100}},
-        {"type": "click", data: {x: 100, y: 100}}, {
+    "continue": 5,
+    tasks: [{"type": "click", data: {x: 100, y: 100, "continue": 5}},
+        {"type": "click", data: {x: 100, y: 100, "continue": 5}}, {
             "type": "click",
-            data: {x: 100, y: 100}
-        }, {"type": "click", data: {x: 100, y: 100}}]
+            data: {x: 100, y: 100, "continue": 5}
+        }, {"type": "click", data: {x: 100, y: 100, "continue": 5}}]
 }).setTaskFinishCallback(function (task) {
         console.log("恭喜你，完成一个任务！")
     }).setAllTaskFinishCallback(function () {
         console.log("恭喜你，都成功啦！")
-    }).receive({type: "click", data: {x: 100, y: 100}}).receive({
-        type: "click",
-        data: {x: 100, y: 100}
-    }).receive({type: "click", data: {x: 100, y: 100}})
+    }).setFailCallback(function () {
+        new TaskManager({
+            "name": '训练小游戏一',
+            "continue": 5,
+            tasks: [{"type": "click", data: {x: 100, y: 100, "continue": 5}},
+                {"type": "click", data: {x: 100, y: 100, "continue": 5}}, {
+                    "type": "click",
+                    data: {x: 100, y: 100, "continue": 5}
+                }, {"type": "click", data: {x: 100, y: 100, "continue": 5}}]
+        }).setTaskFinishCallback(function (task) {
+                console.log("恭喜你，完成一个任务！")
+            }).setAllTaskFinishCallback(function () {
+                console.log("恭喜你，都成功啦！")
+            }).setFailCallback(function () {
+                console.log("唉，失败了！")
+            })
+    })
+
+
+console.log(taskManager)
+var now = (new Date()).getTime();
+setInterval(function () {
+    taskManager.receive({type: "noop", data: {before: now, now: (new Date()).getTime(), begin: now, type: "action"}})
+}, 3000)
