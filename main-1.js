@@ -42,7 +42,7 @@ window.onload = function () {
                         this.addChild(text, 1);
 
                         var position = cc.Sprite.create("2.png");
-                        position.setPosition(size.width / 2, size.height / 2);
+                        position.setPosition(0, 0);
                         position.setScale(1);
                         this.addChild(position, 2);
 
@@ -98,7 +98,7 @@ window.onload = function () {
                             },
                             onMouseUp: function (event) {
                             }
-                        }, position);
+                        }, bg);
 
                         cc.eventManager.addListener({
                             event: cc.EventListener.KEYBOARD,
@@ -119,7 +119,7 @@ window.onload = function () {
                                     }
                                 }
                             }
-                        }, position);
+                        }, bg);
 
 
                         function checker() {
@@ -158,7 +158,7 @@ window.onload = function () {
                                 }
                                 thiss.schedule(checker, 1, 5, 1);
                             }
-                        }, start);
+                        }, bg);
                     }
                 }
             );
