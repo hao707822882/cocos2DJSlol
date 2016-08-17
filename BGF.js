@@ -42,14 +42,14 @@ BGFUtil.clone = function clone(obj) {
  * 事件监听处理区
  * @constructor
  */
-function EventManager() {
+function EventManager(taskManager) {
 
-    this.taskManager = new TaskManager();
+    this.taskManager = taskManager;
 
     this.receive = function (event) {
         //将event封装成action
         var action = this.eventToAction(event);
-        taskManager.receive(action)
+        this.taskManager.receive(action)
         return this;
     }
     this.eventToAction = function (event) {
@@ -193,7 +193,7 @@ function MoveChecker() {
 
     this.logger = new BGFLogger("MoveChecker");
 
-
+    //
     this.check = function (action, task, taskManager) {
         //进行action与task的比对
         console.log("---Move checker")
@@ -215,10 +215,6 @@ function NoopChecker() {
 
     this.check = function (action, task, taskManager, taskOrigin) {
 
-        if (!(action.data.before && action.data.now )) {
-            this.logger.log("action date missing");
-            return;
-        }
 
         if (taskManager.finish) {
             this.logger.log("task has finish and noop loop break");
@@ -259,39 +255,25 @@ function BGFLogger(name) {
 }
 
 
-var taskManager = new TaskManager({
-    "name": '训练小游戏一',
-    "continue": 5,
-    tasks: [{"type": "click", data: {x: 100, y: 100, "continue": 5}},
-        {"type": "click", data: {x: 100, y: 100, "continue": 5}}, {
-            "type": "click",
-            data: {x: 100, y: 100, "continue": 5}
-        }, {"type": "click", data: {x: 100, y: 100, "continue": 5}}]
-}).setTaskFinishCallback(function (task) {
-        console.log("恭喜你，完成一个任务！")
-    }).setAllTaskFinishCallback(function () {
-        console.log("恭喜你，都成功啦！")
-    }).setFailCallback(function () {
-        new TaskManager({
-            "name": '训练小游戏一',
-            "continue": 5,
-            tasks: [{"type": "click", data: {x: 100, y: 100, "continue": 5}},
-                {"type": "click", data: {x: 100, y: 100, "continue": 5}}, {
-                    "type": "click",
-                    data: {x: 100, y: 100, "continue": 5}
-                }, {"type": "click", data: {x: 100, y: 100, "continue": 5}}]
-        }).setTaskFinishCallback(function (task) {
-                console.log("恭喜你，完成一个任务！")
-            }).setAllTaskFinishCallback(function () {
-                console.log("恭喜你，都成功啦！")
-            }).setFailCallback(function () {
-                console.log("唉，失败了！")
-            })
-    })
+//var taskManager = new TaskManager({
+//    "name": '训练小游戏一',
+//    "continue": 5,
+//    tasks: [{"type": "click", data: {x: 100, y: 100, "continue": 5}},
+//        {"type": "click", data: {x: 100, y: 100, "continue": 5}}, {
+//            "type": "click",
+//            data: {x: 100, y: 100, "continue": 5}
+//        }, {"type": "click", data: {x: 100, y: 100, "continue": 5}}]
+//}).setTaskFinishCallback(function (task) {
+//        console.log("恭喜你，完成一个任务！")
+//    }).setAllTaskFinishCallback(function () {
+//        console.log("恭喜你，都成功啦！")
+//    }).setFailCallback(function () {
+//        alert("失败")
+//    })
 
 
-console.log(taskManager)
-var now = (new Date()).getTime();
-setInterval(function () {
-    taskManager.receive({type: "noop", data: {before: now, now: (new Date()).getTime(), begin: now, type: "action"}})
-}, 3000)
+//console.log(taskManager)
+//var now = (new Date()).getTime();
+//setInterval(function () {
+//    taskManager.receive({type: "noop", data: {before: now, now: (new Date()).getTime(), begin: now, type: "action"}})
+//}, 3000)

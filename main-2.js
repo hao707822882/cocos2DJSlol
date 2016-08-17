@@ -2,6 +2,26 @@
  * Created by Administrator on 2016/5/27.
  */
 window.onload = function () {
+
+    var taskManager = new TaskManager({
+        "name": '训练小游戏一',
+        "continue": 5,
+        tasks: [{"type": "click", data: {x: 100, y: 100, "continue": 5}},
+            {"type": "click", data: {x: 100, y: 100, "continue": 5}}, {
+                "type": "click",
+                data: {x: 100, y: 100, "continue": 5}
+            }, {"type": "click", data: {x: 100, y: 100, "continue": 5}}]
+    }).setTaskFinishCallback(function (task) {
+            console.log("恭喜你，完成一个任务！")
+        }).setAllTaskFinishCallback(function () {
+            console.log("恭喜你，都成功啦！")
+            isStart = false;
+        }).setFailCallback(function () {
+            alert("失败")
+            isStart = false;
+        })
+
+    var startTime = null;
     var isStart = false;
     cc.game.onStart = function () {
         cc.LoaderScene.preload(gameConfig.resource, function () {
@@ -9,7 +29,13 @@ window.onload = function () {
                     ctor: function () {
                         this._super();
                         this.schedule(function () {
-                            cc.log("update事件。。。")
+                            //cc.log("update事件。。。")
+                            if (isStart) {
+                                taskManager.receive({
+                                    type: "noop",
+                                    data: {before: null, now: (new Date()).getTime(), begin: startTime, type: "beat"}
+                                })
+                            }
                         });
                     },
                     onEnter: function () {
@@ -18,7 +44,7 @@ window.onload = function () {
                         var thiss = this;
                         var size = cc.director.getWinSize();
                         var bg = cc.Sprite.create("img/map.jpg");
-                        bg.setPosition(bg.width / 2, bg.height / 2);
+                        bg.setPosition(size.width / 2, size.height / 2);
                         bg.setScale(1);
                         this.addChild(bg, 0);
 
@@ -28,27 +54,6 @@ window.onload = function () {
                         start.y = 150;
                         this.addChild(start, 1);
 
-                        var text = new cc.LabelTTF("任务显示牌", "Arial", 38);
-                        text.x = size.width / 2;
-                        text.y = 100;
-                        this.addChild(text, 1);
-
-                        var position = cc.Sprite.create("2.png");
-                        position.setPosition(0, 0);
-                        position.setScale(1);
-                        this.addChild(position, 2);
-
-
-                        function isThisStageShouldDo(action) {
-                            var shouldDo = task[0];
-                            var type = typeof shouldDo;
-                            switch (action) {
-                                case "move":
-                                    return type == "object" ? true : false;
-                                case "key":
-                                    return type == "string" ? true : false;
-                            }
-                        }
 
                         function getKeyNum(key) {
                             switch (key) {
@@ -76,7 +81,7 @@ window.onload = function () {
                                 var oldX = target.getPositionX();
                                 var oldY = target.getPositionY();
                                 //检测移动的位置
-                                cc.log("----移动------" + isStart)
+                                cc.log("----移动------")
 
                             },
                             onMouseUp: function (event) {
@@ -94,12 +99,26 @@ window.onload = function () {
                         }, bg);
 
 
+                        cc.eventManager.addListener({
+                            event: cc.EventListener.TOUCH_ONE_BY_ONE,//单击
+                            swallowTouches: true,
+                            onTouchBegan: function (touch, event) {
+                                console.log("x:" + event.x + " y:" + event.y)
+                                if (isStart) {
+                                    taskManager.receive({
+                                        type: "click",
+                                        data: {x: event.x, y: event.y}
+                                    })
+                                }
+                            }
+                        }, bg);
 
                         //游戏启动
                         cc.eventManager.addListener({
                             event: cc.EventListener.TOUCH_ONE_BY_ONE,//单击
                             swallowTouches: true,
                             onTouchBegan: function (touch, event) {
+                                startTime = new Date().getTime();
                                 isStart = true;
                             }
                         }, start);
