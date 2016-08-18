@@ -1,5 +1,7 @@
 //综述:Boom任务类型游戏处理框架
 
+
+//目前支持游戏的初级和高级
 /**
  * Created by Administrator on 2016/8/17.
  *
@@ -37,6 +39,8 @@ BGFUtil.clone = function clone(obj) {
     return o;
 }
 
+
+BGFUtil.keyMap = {"Q": 81, "W": 87, "E": 69, "R": 82};
 
 /**
  * 事件监听处理区
@@ -84,6 +88,11 @@ function TaskManager(task, checker) {
     this.taskCopy = BGFUtil.clone(task.tasks);
 
 
+    //获取游戏难度，如果task，没有设置那么为普通模式，如果设置了，那么为严格模式
+    this.getGameMode = function () {
+        return this.task.mode ? this.task.mode : 0;
+    }
+
     this.allFinishCallback = function () {
         this.logger.log("default allFinishCallback invoke........")
     }
@@ -96,9 +105,20 @@ function TaskManager(task, checker) {
         this.logger.log("default failCallback invoke........")
     }
 
-    this.fail = function (reason) {
+    this.timeUseCallback = function (useTime) {
+        this.logger.log("use........." + useTime)
+    }
+
+    this.setTimeUseCallback = function (fn) {
+        this.timeUseCallback = fn
+        return this;
+    }
+
+    this.fail = function (reason, task, action) {
         this.finish = true;
-        this.failCallback(reason);
+        console.trace()
+        console.log(JSON.stringify(task) + JSON.stringify(action))
+        this.failCallback(reason, task, action);
     }
 
     //设置task finish call back
@@ -106,6 +126,7 @@ function TaskManager(task, checker) {
         this.taskFinishCallback = fn;
         return this;
     }
+
 
     //设置task all finish call back
     this.setAllTaskFinishCallback = function (fn) {
@@ -123,6 +144,39 @@ function TaskManager(task, checker) {
     this.getTask = function () {
         return this.taskCopy[0];
     }
+
+
+    //创建点击任务
+    this.createClick = function (x, y) {
+        return {
+            type: "click",
+            data: {x: x, y: y}
+        }
+    }
+
+    //创建noop beat任务
+    this.createNoopBeat = function (startTime) {
+        return {
+            type: "noop",
+            data: {before: null, now: (new Date()).getTime(), begin: startTime, type: "beat"}
+        }
+    }
+    //创建noop action任务
+    this.createNoopAction = function (before, startTime) {
+        return {
+            type: "noop",
+            data: {before: before, now: (new Date()).getTime(), begin: startTime, type: "action"}
+        }
+    }
+    //键盘事件
+    this.createKey = function (key) {
+        return {
+            type: "key",
+            data: {key: key}
+        }
+    }
+
+
     //结束一个任务
     this.finishTask = function (canDelete) {
         if (this.finish) {
@@ -131,10 +185,14 @@ function TaskManager(task, checker) {
         }
         var temp
         if (canDelete) {
+            console.trace();
+            this.logger.log("now left task " + JSON.stringify(this.taskCopy))
             //可删除的
             temp = this.taskCopy.shift();
+            this.logger.log("now left task " + JSON.stringify(this.taskCopy))
             this.doneTask.push(temp)
             this.taskFinishCallback(temp);
+            this.logger.log("has done " + JSON.stringify(this.doneTask) + " left " + JSON.stringify(this.taskCopy))
             if (this.doneTask.length == this.task.tasks.length) {
                 this.allFinishCallback(this.doneTask)
                 this.finish = true;
@@ -148,10 +206,14 @@ function TaskManager(task, checker) {
 
     this.logger.log("create taskManager for task" + JSON.stringify(task));
 
-    this.checkers = {"move": new MoveChecker(), "click": new ClickChecker(), "noop": new NoopChecker()};
+    this.checkers = {
+        "move": new MoveChecker(),
+        "click": new ClickChecker(),
+        "noop": new NoopChecker(),
+        "key": new KeyChecker()
+    };
 
     this.receive = function (action) {
-        this.logger.log("receive ")
         console.trace();
         //action有类型区别
         if (!this.checkers[action.type]) {
@@ -160,6 +222,9 @@ function TaskManager(task, checker) {
         }
         var task = this.getTask();
         var checkResult = this.checkers[action.type] && this.checkers[action.type].check(action, task, this, this.task)
+        if (checkResult) {
+            this.logger.log("receive action" + JSON.stringify(action));
+        }
         this.finishTask(checkResult)
         return this;
     }
@@ -180,11 +245,38 @@ function ClickChecker() {
     }
 
     this.check = function (action, task, taskManager) {
+
+        if (taskManager.finish) {
+            this.logger.log("task has finish and noop loop break");
+            return;
+        }
+
+        //对类型进行检测
+        if (task.type != action.type) {
+            if (taskManager.getGameMode()) {//如果是在严格模式下
+                taskManager.fail("按键错误！", task, action)
+            }
+            return false;
+        }
+
+
         //进行action与task的比对
+        if (!task.data.r) {
+            task.data.r = 10;
+        }
         if (task.data.r) {
             //计算距离
-            var dis = Math.sqrt(Math.sqrt(this.square(action.data.x - task.data.x) + this.square(action.data.y - task.data.y)))
-            return dis < task.data.r;
+            var dis = Math.sqrt(this.square(action.data.x - task.data.x) + this.square(action.data.y - task.data.y))
+            if (dis < task.data.r) {
+                return true;
+            } else {
+                if (taskManager.getGameMode()) {
+                    taskManager.fail("点击位置错误", task, action);
+                    return false;
+                } else {
+                    return false;
+                }
+            }
         }
 
         console.log("---Click checker")
@@ -196,6 +288,46 @@ function ClickChecker() {
     }
 }
 
+
+/**
+ * 按键检测器
+ * @constructor
+ */
+function KeyChecker() {
+    this.logger = new BGFLogger("KeyChecker");
+
+
+    this.check = function (action, task, taskManager) {
+
+        if (taskManager.finish) {
+            this.logger.log("task has finish and noop loop break");
+            return;
+        }
+
+        //80/81/82/83
+        var actionKey = action.data.key;
+        var taskKey = BGFUtil.keyMap[task.data.key]
+        if (taskManager.getGameMode()) {//严格模式
+            if (task.type != action.type) {//类型不匹配
+                taskManager.fail("按键错误！", task, action)
+                return false;
+            } else {
+                if (actionKey == taskKey) {
+                    return true;
+                } else {
+                    taskManager.fail("按键错误！", task, action)
+                    return false;
+                }
+            }
+        } else {
+            if (actionKey == taskKey) {
+                return true;
+            } else {
+                return false;
+            }
+        }
+    }
+}
 
 /**
  * 移动检测器
@@ -227,31 +359,35 @@ function NoopChecker() {
 
     this.check = function (action, task, taskManager, taskOrigin) {
 
-
         if (taskManager.finish) {
             this.logger.log("task has finish and noop loop break");
             return;
         }
 
+        //对类型进行检测
         if (action.data.type == "action") {
+            //不是action的，不执行，但是不会错误
+            if (task.type != action.type) {
+                return false;
+            }
+
             var howLong = action.data.now - action.data.before
             if (howLong / 1000 > task.data.continue) {
-                taskManager.fail("操作超时，失败！")
+                taskManager.fail("操作超时，失败！", task, action)
                 return false;
             } else {
                 return true;
             }
         } else if (action.data.type == "beat") {
             var howLong = action.data.now - action.data.begin
+            taskManager.timeUseCallback(howLong);
             if (howLong / 1000 > taskOrigin.continue) {
-                taskManager.fail("总时长超时，失败！")
+                taskManager.fail("总时长超时，失败！", task, action)
                 return false;
             } else {
                 return false;
             }
         }
-        //进行action与task的比对
-        console.log("---Noop checker")
     }
 }
 
@@ -261,11 +397,15 @@ function BGFLogger(name) {
     this.name = name;
 
     this.log = function (data) {
-        console.log("BGFLog " + this.name + "-----info-----    " + data);
+        if (BGFLogger.logShow)
+            console.log("BGFLog " + this.name + "-----info-----    " + data);
     }
 
 }
-
+BGFLogger.logShow = true;
+BGFLogger.showLog = function (show) {
+    BGFLogger.logShow = show;
+}
 
 //var taskManager = new TaskManager({
 //    "name": '训练小游戏一',

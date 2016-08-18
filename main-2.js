@@ -1,30 +1,44 @@
 /**
  * Created by Administrator on 2016/5/27.
  */
+
+var startTime = null;
+var isStart = false;
+var beforeTime = null;
+var startScene = null;
+var endScene = null;
+var msg = "";
 window.onload = function () {
 
     var taskManager;
 
     var task = {
         "name": '训练小游戏一',
-        "continue": 60,
-        tasks: [{"type": "click", data: {x: 100, y: 100, "continue": 5, r: 50}},
-            {"type": "click", data: {x: 100, y: 100, "continue": 5, r: 50}}, {
+        "continue": 10,
+        "mode": 0,
+        "tasks": [{"type": "click", data: {x: 100, y: 100, "continue": 5, r: 20}},
+            {"type": "key", data: {key: "Q"}}, {"type": "key", data: {key: "W"}}, {
                 "type": "click",
-                data: {x: 100, y: 100, "continue": 5, r: 50}
-            }, {"type": "click", data: {x: 100, y: 100, "continue": 5, r: 50}}]
+                data: {x: 103, y: 100, "continue": 5, r: 200}
+            }]
     }
 
     function reCreateTaskManager() {
         var taskManager = new TaskManager(task).setTaskFinishCallback(function (task) {
-            console.log("恭喜你，完成一个任务！")
+            console.log("恭喜你，完成一个任务！" + JSON.stringify(task))
+            $("#info").append($("<p>").text(JSON.stringify(task) + "√"))
         }).setAllTaskFinishCallback(function () {
-            console.log("恭喜你，都成功啦！")
-            alert("恭喜你，都成功了！")
+            alert("恭喜你，都成功了！总耗时：" + (new Date() - startTime) / 1000)
             isStart = false;
-        }).setFailCallback(function () {
+            msg = "成功" + (new Date().getTime() - startTime)
+            cc.director.runScene(new endScene());
+        }).setFailCallback(function (m, task, action) {
             alert("失败" + (new Date().getTime() - startTime))
             isStart = false;
+            msg = "失败" + m + (new Date().getTime() - startTime)
+            $("#info").append($("<p>").text(JSON.stringify(task) + "×"))
+            cc.director.runScene(new endScene());
+        }).setTimeUseCallback(function () {
         })
         return taskManager;
     }
@@ -33,10 +47,73 @@ window.onload = function () {
         return taskManager;
     }
 
-    var startTime = null;
-    var isStart = false;
+
     cc.game.onStart = function () {
         cc.LoaderScene.preload(gameConfig.resource, function () {
+
+            startScene = cc.Scene.extend({
+                    ctor: function () {
+                        this._super();
+                        this.schedule(function () {
+                            //cc.log("update事件。。。")
+                        });
+                    },
+                    onEnter: function () {
+                        this._super();
+                        var size = cc.director.getWinSize();
+                        var start = new cc.LabelTTF("start", "Arial", 38);
+                        start.x = size.width / 2;
+                        start.y = size.height / 2;
+                        this.addChild(start, 0);
+
+                        //游戏启动
+                        cc.eventManager.addListener({
+                            event: cc.EventListener.TOUCH_ONE_BY_ONE,//单击
+                            swallowTouches: true,
+                            onTouchBegan: function (touch, event) {
+                                cc.director.runScene(new gameScene());
+                                taskManager = reCreateTaskManager();
+                                startTime = new Date().getTime();
+                                beforeTime = new Date().getTime();
+                                isStart = true;
+                            }
+                        }, start);
+                    }
+                }
+            );
+
+            endScene = cc.Scene.extend({
+                    ctor: function () {
+                        this._super();
+                        this.schedule(function () {
+                            //cc.log("update事件。。。")
+                        });
+                    },
+                    onEnter: function () {
+                        this._super();
+                        var size = cc.director.getWinSize();
+                        var start = new cc.LabelTTF(msg, "Arial", 38);
+                        start.x = size.width / 2;
+                        start.y = size.height / 2;
+                        this.addChild(start, 0);
+
+                        //游戏启动
+                        cc.eventManager.addListener({
+                            event: cc.EventListener.TOUCH_ONE_BY_ONE,//单击
+                            swallowTouches: true,
+                            onTouchBegan: function (touch, event) {
+                                cc.director.runScene(new gameScene());
+                                taskManager = reCreateTaskManager();
+                                startTime = new Date().getTime();
+                                beforeTime = new Date().getTime();
+                                isStart = true;
+                            }
+                        }, start);
+                    }
+                }
+            );
+
+
             var gameScene = cc.Scene.extend({
                     ctor: function () {
                         this._super();
@@ -59,12 +136,6 @@ window.onload = function () {
                         bg.setPosition(size.width / 2, size.height / 2);
                         bg.setScale(1);
                         this.addChild(bg, 0);
-
-
-                        var start = new cc.LabelTTF("start", "Arial", 38);
-                        start.x = size.width / 2;
-                        start.y = 150;
-                        this.addChild(start, 1);
 
 
                         function getKeyNum(key) {
@@ -93,7 +164,6 @@ window.onload = function () {
                                 var oldX = target.getPositionX();
                                 var oldY = target.getPositionY();
                                 //检测移动的位置
-                                cc.log("----移动------ x:" + pos.x + " y:" + pos.y)
                             },
                             onMouseUp: function (event) {
                             }
@@ -106,39 +176,30 @@ window.onload = function () {
                             },
                             onKeyReleased: function (key, event) {
                                 cc.log("press key " + key);
-                            }
-                        }, bg);
-
-
-                        cc.eventManager.addListener({
-                            event: cc.EventListener.TOUCH_ONE_BY_ONE,//单击
-                            swallowTouches: true,
-                            onTouchBegan: function (touch, event) {
-
-                                console.log("x:" + touch._point.x + " y:" + touch._point.y)
                                 if (isStart) {
-                                    taskManager.receive({
-                                        type: "click",
-                                        data: {x: touch._point.x, y: touch._point.y}
-                                    })
+                                    taskManager.receive(taskManager.createNoopAction(beforeTime))
+                                    taskManager.receive(taskManager.createKey(key))
+                                    beforeTime = new Date();
                                 }
                             }
                         }, bg);
 
-                        //游戏启动
+
                         cc.eventManager.addListener({
                             event: cc.EventListener.TOUCH_ONE_BY_ONE,//单击
                             swallowTouches: true,
                             onTouchBegan: function (touch, event) {
-                                taskManager = reCreateTaskManager();
-                                startTime = new Date().getTime();
-                                isStart = true;
+                                if (isStart) {
+                                    taskManager.receive(taskManager.createNoopAction(beforeTime))
+                                    taskManager.receive(taskManager.createClick(touch._point.x, touch._point.y))
+                                    beforeTime = new Date();
+                                }
                             }
-                        }, start);
+                        }, bg);
                     }
                 }
             );
-            cc.director.runScene(new gameScene());
+            cc.director.runScene(new startScene());
         }, this);
     }
     cc.game.run("gameCanvas");
