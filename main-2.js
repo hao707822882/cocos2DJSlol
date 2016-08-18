@@ -3,23 +3,35 @@
  */
 window.onload = function () {
 
-    var taskManager = new TaskManager({
+    var taskManager;
+
+    var task = {
         "name": '训练小游戏一',
-        "continue": 5,
-        tasks: [{"type": "click", data: {x: 100, y: 100, "continue": 5}},
-            {"type": "click", data: {x: 100, y: 100, "continue": 5}}, {
+        "continue": 60,
+        tasks: [{"type": "click", data: {x: 100, y: 100, "continue": 5, r: 50}},
+            {"type": "click", data: {x: 100, y: 100, "continue": 5, r: 50}}, {
                 "type": "click",
-                data: {x: 100, y: 100, "continue": 5}
-            }, {"type": "click", data: {x: 100, y: 100, "continue": 5}}]
-    }).setTaskFinishCallback(function (task) {
+                data: {x: 100, y: 100, "continue": 5, r: 50}
+            }, {"type": "click", data: {x: 100, y: 100, "continue": 5, r: 50}}]
+    }
+
+    function reCreateTaskManager() {
+        var taskManager = new TaskManager(task).setTaskFinishCallback(function (task) {
             console.log("恭喜你，完成一个任务！")
         }).setAllTaskFinishCallback(function () {
             console.log("恭喜你，都成功啦！")
+            alert("恭喜你，都成功了！")
             isStart = false;
         }).setFailCallback(function () {
-            alert("失败")
+            alert("失败" + (new Date().getTime() - startTime))
             isStart = false;
         })
+        return taskManager;
+    }
+
+    function getTaskManager() {
+        return taskManager;
+    }
 
     var startTime = null;
     var isStart = false;
@@ -31,7 +43,7 @@ window.onload = function () {
                         this.schedule(function () {
                             //cc.log("update事件。。。")
                             if (isStart) {
-                                taskManager.receive({
+                                getTaskManager().receive({
                                     type: "noop",
                                     data: {before: null, now: (new Date()).getTime(), begin: startTime, type: "beat"}
                                 })
@@ -81,8 +93,7 @@ window.onload = function () {
                                 var oldX = target.getPositionX();
                                 var oldY = target.getPositionY();
                                 //检测移动的位置
-                                cc.log("----移动------")
-
+                                cc.log("----移动------ x:" + pos.x + " y:" + pos.y)
                             },
                             onMouseUp: function (event) {
                             }
@@ -103,11 +114,12 @@ window.onload = function () {
                             event: cc.EventListener.TOUCH_ONE_BY_ONE,//单击
                             swallowTouches: true,
                             onTouchBegan: function (touch, event) {
-                                console.log("x:" + event.x + " y:" + event.y)
+
+                                console.log("x:" + touch._point.x + " y:" + touch._point.y)
                                 if (isStart) {
                                     taskManager.receive({
                                         type: "click",
-                                        data: {x: event.x, y: event.y}
+                                        data: {x: touch._point.x, y: touch._point.y}
                                     })
                                 }
                             }
@@ -118,6 +130,7 @@ window.onload = function () {
                             event: cc.EventListener.TOUCH_ONE_BY_ONE,//单击
                             swallowTouches: true,
                             onTouchBegan: function (touch, event) {
+                                taskManager = reCreateTaskManager();
                                 startTime = new Date().getTime();
                                 isStart = true;
                             }

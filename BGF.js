@@ -151,6 +151,8 @@ function TaskManager(task, checker) {
     this.checkers = {"move": new MoveChecker(), "click": new ClickChecker(), "noop": new NoopChecker()};
 
     this.receive = function (action) {
+        this.logger.log("receive ")
+        console.trace();
         //action有类型区别
         if (!this.checkers[action.type]) {
             this.logger.log("warring!  task: " + JSON.stringify(action) + "  not found checker and now pass")
@@ -173,8 +175,18 @@ function ClickChecker() {
 
     this.logger = new BGFLogger("ClickChecker");
 
+    this.square = function (num) {
+        return num * num;
+    }
+
     this.check = function (action, task, taskManager) {
         //进行action与task的比对
+        if (task.data.r) {
+            //计算距离
+            var dis = Math.sqrt(Math.sqrt(this.square(action.data.x - task.data.x) + this.square(action.data.y - task.data.y)))
+            return dis < task.data.r;
+        }
+
         console.log("---Click checker")
         if (action.data.x && action.data.y && task.data.x && task.data.y) {
             //判断范围，这边是直接相等
