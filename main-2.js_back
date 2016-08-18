@@ -19,14 +19,11 @@ window.onload = function () {
         "name": '训练小游戏一',
         "continue": 10,
         "mode": 0,
-        "view": {
-            bg: "img/map.jpg",
-            compontents: [{"img": "111.png", x: 100, y: 100}, {"img": "222.png", x: 200, y: 200}]
-        },
+        "view": {bg: "img/map.jpg"},
         "tasks": [{"type": "click", data: {x: 100, y: 100, "continue": 5, r: 20}},
             {"type": "key", data: {key: "Q"}}, {"type": "key", data: {key: "W"}}, {
                 "type": "click",
-                data: {x: 200, y: 200, "continue": 5, r: 200}
+                data: {x: 103, y: 100, "continue": 5, r: 200}
             }]
     }
 
@@ -138,23 +135,34 @@ window.onload = function () {
                         this._super();
 
 
-                        var thiss = this;
-
-                        function drowCompontent(compontents, page) {
+                        function drowComponent(compontents, page) {
                             for (var a = 0; a < compontents.length; a++) {
-                                var c = compontents[a];
-                                var bg = cc.Sprite.create(c.img);
-                                bg.setPosition(c.x, c.y);
-                                bg.setScale(1);
-                                page.addChild(bg, 0);
+                                var com = compontents[a];
+                                var bg = cc.Sprite.create(com.img);
+                                bg.setPosition(com.x, com.y);
+                                page.addChild(bg, a + 1);
                             }
                         }
 
-                        var bg = cc.Sprite.create("img/map.jpg");
-                        bg.setPosition(bg.width / 2, bg.height / 2);
-                        bg.setScale(1);
-                        this.addChild(bg, 0);
-                        drowCompontent(task.view.compontents, thiss)
+                        function drowBg(bg, page) {
+                            var bg = cc.Sprite.create(bg);
+                            bg.setPosition(bg.width / 2, bg.height / 2);
+                            bg.setScale(1);
+                            page.addChild(bg, 0);
+                        }
+
+                        function draw(jsonView, page) {
+                            //绘制背景
+                            var bg = drowBg(jsonView.bg, page);
+                            var components = jsonView.components;
+                            //绘制组件
+                            //drowComponent(components, page);
+                            return bg;
+                        }
+
+                        var thiss = this;
+                        var bg = draw(taskManager.task.view, thiss)
+
 
                         cc.eventManager.addListener({
                             event: cc.EventListener.MOUSE,
