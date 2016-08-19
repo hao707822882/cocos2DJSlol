@@ -24,6 +24,9 @@
 <body style="">
 <canvas id="gameCanvas" width="736" height="370"></canvas>
 <div id="info"></div>
+
+<script src="frameworks/cocos2d-html5/CCBoot.js"></script>
+<script cocos src="BGF.js"></script>
 <script>
     var task = {
         "name": '训练小游戏一',
@@ -32,23 +35,24 @@
         "resource": ["img/map.jpg", "img/111.png", "img/222.png"],
         "view": {
             bg: "img/map.jpg",
-            compontents: [{"img": "img/111.png", x: 100, y: 300}, {"img": "img/222.png", x: 200, y: 150}]
+            compontents: [{"img": "img/111.png", x: 100, y: 100}, {"img": "img/222.png", x: 200, y: 200}]
         },
-        "tasks": [{"type": "click", data: {x: 100, y: 300, "continue": 5, r: 20}},
+        "tasks": [{"type": "click", data: {x: 100, y: 100, "continue": 5, r: 20}},
             {"type": "key", data: {key: "Q"}}, {"type": "key", data: {key: "W"}}, {
                 "type": "noop",
                 data: {"continue": 2}
             }, {
                 "type": "click",
-                data: {x: 200, y: 150, "continue": 5, r: 200}
+                data: {x: 200, y: 200, "continue": 5, r: 200}
             }]
     }
 
 
-
+    //设置游戏获取到的回调
+    TaskManager.setGetAllTaskCallback(function (task) {
+        $("#info").append($("<p>").text(JSON.stringify(task) + ""))
+    })
 </script>
-<script src="frameworks/cocos2d-html5/CCBoot.js"></script>
-<script cocos src="BGF.js"></script>
 <script cocos src="GameLoader.js"></script>
 </body>
 </html>
