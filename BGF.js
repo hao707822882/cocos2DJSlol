@@ -370,10 +370,15 @@ function NoopChecker() {
             if (task.type != action.type) {
                 return false;
             }
+            var howLong = (action.data.now - action.data.before) / 1000;
 
-            var howLong = action.data.now - action.data.before
-            if (howLong / 1000 > task.data.continue) {
-                taskManager.fail("操作超时，失败！", task, action)
+            if (!task.data.r) {
+                task.data.r = 0.5;
+            }
+
+            console.log("-----" + howLong)
+            if ((task.data.continue + task.data.r) < howLong || (task.data.continue - task.data.r) > howLong) {
+                taskManager.fail("操作超时，失败！" + howLong + "===", task, action)
                 return false;
             } else {
                 return true;

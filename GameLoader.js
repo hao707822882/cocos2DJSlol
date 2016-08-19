@@ -1,7 +1,10 @@
 /**
  * Created by Administrator on 2016/5/27.
  */
+//不打日志
+BGFLogger.showLog(false)
 
+//
 var startTime = null;
 var isStart = false;
 var beforeTime = null;
@@ -9,55 +12,61 @@ var startScene = null;
 var endScene = null;
 var msg = "";
 
-BGFLogger.showLog(false)
 
-window.onload = function () {
+var taskManager;
 
-    var taskManager;
-
-    var task = {
-        "name": '训练小游戏一',
-        "continue": 10,
-        "mode": 0,
-        "view": {
-            bg: "img/map.jpg",
-            compontents: [{"img": "111.png", x: 100, y: 100}, {"img": "222.png", x: 200, y: 200}]
-        },
-        "tasks": [{"type": "click", data: {x: 100, y: 100, "continue": 5, r: 20}},
-            {"type": "key", data: {key: "Q"}}, {"type": "key", data: {key: "W"}}, {
-                "type": "click",
-                data: {x: 200, y: 200, "continue": 5, r: 200}
-            }]
-    }
-
-    function reCreateTaskManager() {
-        var taskManager = new TaskManager(task).setTaskFinishCallback(function (task) {
-            console.log("恭喜你，完成一个任务！" + JSON.stringify(task))
-            $("#info").append($("<p>").text(JSON.stringify(task) + "√"))
-        }).setAllTaskFinishCallback(function () {
-            alert("恭喜你，都成功了！总耗时：" + (new Date() - startTime) / 1000)
-            isStart = false;
-            msg = "成功" + (new Date().getTime() - startTime)
-            cc.director.runScene(new endScene());
-        }).setFailCallback(function (m, task, action) {
-            alert("失败" + (new Date().getTime() - startTime))
-            isStart = false;
-            msg = "失败" + m + (new Date().getTime() - startTime)
-            $("#info").append($("<p>").text(JSON.stringify(task) + "×"))
-            cc.director.runScene(new endScene());
-        }).setTimeUseCallback(function () {
-        })
-        return taskManager;
-    }
-
-    function getTaskManager() {
-        return taskManager;
-    }
+var task = {
+    "name": '训练小游戏一',
+    "continue": 4,
+    "mode": 0,
+    "resource": ["img/map.jpg", "HelloWorld.png", "22.gif", "x.png", "2.png"],
+    "view": {
+        bg: "img/map.jpg",
+        compontents: [{"img": "111.png", x: 100, y: 100}, {"img": "222.png", x: 200, y: 200}]
+    },
+    "tasks": [{"type": "click", data: {x: 100, y: 100, "continue": 5, r: 20}},
+        {"type": "key", data: {key: "Q"}}, {"type": "key", data: {key: "W"}}, {
+            "type": "noop",
+            data: {"continue": 2}
+        }, {
+            "type": "click",
+            data: {x: 200, y: 200, "continue": 5, r: 200}
+        }]
+}
 
 
+var gameConfig = {
+    title: task.name,
+    resource: task.resource
+}
+
+function reCreateTaskManager() {
+    var taskManager = new TaskManager(task).setTaskFinishCallback(function (task) {
+        console.log("恭喜你，完成一个任务！" + JSON.stringify(task))
+        $("#info").append($("<p>").text(JSON.stringify(task) + "√"))
+    }).setAllTaskFinishCallback(function () {
+        isStart = false;
+        msg = "成功" + (new Date().getTime() - startTime)
+        cc.director.runScene(new endScene());
+    }).setFailCallback(function (m, task, action) {
+        isStart = false;
+        msg = "失败" + m + (new Date().getTime() - startTime)
+        $("#info").append($("<p>").text(JSON.stringify(task) + "×"))
+        cc.director.runScene(new endScene());
+    }).setTimeUseCallback(function () {
+
+    })
+    return taskManager;
+}
+
+function getTaskManager() {
+    return taskManager;
+}
+
+$(function () {
     cc.game.onStart = function () {
         cc.LoaderScene.preload(gameConfig.resource, function () {
-
+            cc.director.setDisplayStats(false);
             startScene = cc.Scene.extend({
                     ctor: function () {
                         this._super();
@@ -150,7 +159,7 @@ window.onload = function () {
                             }
                         }
 
-                        var bg = cc.Sprite.create("img/map.jpg");
+                        var bg = cc.Sprite.create(task.view.bg);
                         bg.setPosition(bg.width / 2, bg.height / 2);
                         bg.setScale(1);
                         this.addChild(bg, 0);
@@ -207,4 +216,4 @@ window.onload = function () {
         }, this);
     }
     cc.game.run("gameCanvas");
-};
+})
