@@ -15,25 +15,6 @@ var msg = "";
 
 var taskManager;
 
-var task = {
-    "name": '训练小游戏一',
-    "continue": 4,
-    "mode": 0,
-    "resource": ["img/map.jpg", "HelloWorld.png", "22.gif", "x.png", "2.png"],
-    "view": {
-        bg: "img/map.jpg",
-        compontents: [{"img": "111.png", x: 100, y: 100}, {"img": "222.png", x: 200, y: 200}]
-    },
-    "tasks": [{"type": "click", data: {x: 100, y: 100, "continue": 5, r: 20}},
-        {"type": "key", data: {key: "Q"}}, {"type": "key", data: {key: "W"}}, {
-            "type": "noop",
-            data: {"continue": 2}
-        }, {
-            "type": "click",
-            data: {x: 200, y: 200, "continue": 5, r: 200}
-        }]
-}
-
 
 var gameConfig = {
     title: task.name,
@@ -176,7 +157,7 @@ $(function () {
                                 var oldX = target.getPositionX();
                                 var oldY = target.getPositionY();
                                 //检测移动的位置
-                                console.log("location:  x" + nowX + "y" + nowY)
+                                //console.log("location:  x" + nowX + "y" + nowY)
                             },
                             onMouseUp: function (event) {
                             }

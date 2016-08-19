@@ -87,6 +87,8 @@ function TaskManager(task, checker) {
     this.doneTask = [];
     this.taskCopy = BGFUtil.clone(task.tasks);
 
+    //获取到任务是得回调
+    TaskManager.getAllTaskCallback && TaskManager.getAllTaskCallback(this.task);
 
     //获取游戏难度，如果task，没有设置那么为普通模式，如果设置了，那么为严格模式
     this.getGameMode = function () {
@@ -105,6 +107,7 @@ function TaskManager(task, checker) {
         this.logger.log("default failCallback invoke........")
     }
 
+
     this.timeUseCallback = function (useTime) {
         this.logger.log("use........." + useTime)
     }
@@ -116,7 +119,6 @@ function TaskManager(task, checker) {
 
     this.fail = function (reason, task, action) {
         this.finish = true;
-        console.trace()
         console.log(JSON.stringify(task) + JSON.stringify(action))
         this.failCallback(reason, task, action);
     }
@@ -231,6 +233,16 @@ function TaskManager(task, checker) {
 
     return this;
 }
+
+
+TaskManager.getAllTaskCallback = function (task) {
+    console.log("default getAllTaskCallback invoke........" + JSON.stringify(task))
+}
+
+TaskManager.setGetAllTaskCallback = function (fn) {
+    this.getAllTaskCallback = fn;
+}
+
 
 /**
  * 点击检测器

@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Boom训练小游戏</title>
+    <link rel="icon" type="image/GIF" href="res/favicon.ico"/>
+    <meta name="viewport" content="initial-scale=1">
+    <meta name="apple-mobile-web-app-capable" content="yes"/>
+    <meta name="full-screen" content="yes"/>
+    <meta name="screen-orientation" content="portrait"/>
+    <meta name="x5-fullscreen" content="true"/>
+    <meta name="360-fullscreen" content="true"/>
+    <script src="//cdn.bootcss.com/jquery/3.1.0/jquery.js"></script>
+    <style>
+        body, canvas, div {
+            -moz-user-select: none;
+            -webkit-user-select: none;
+            -ms-user-select: none;
+            -khtml-user-select: none;
+            -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+        }
+    </style>
+</head>
+<body style="">
+<canvas id="gameCanvas" width="736" height="370"></canvas>
+<div id="info"></div>
+<script>
+    var task = {
+        "name": '训练小游戏一',
+        "continue": 6,
+        "mode": 0,
+        "resource": ["img/map.jpg", "img/111.png", "img/222.png"],
+        "view": {
+            bg: "img/map.jpg",
+            compontents: [{"img": "img/111.png", x: 100, y: 300}, {"img": "img/222.png", x: 200, y: 150}]
+        },
+        "tasks": [{"type": "click", data: {x: 100, y: 300, "continue": 5, r: 20}},
+            {"type": "key", data: {key: "Q"}}, {"type": "key", data: {key: "W"}}, {
+                "type": "noop",
+                data: {"continue": 2}
+            }, {
+                "type": "click",
+                data: {x: 200, y: 150, "continue": 5, r: 200}
+            }]
+    }
+
+
+
+</script>
+<script src="frameworks/cocos2d-html5/CCBoot.js"></script>
+<script cocos src="BGF.js"></script>
+<script cocos src="GameLoader.js"></script>
+</body>
+</html>
