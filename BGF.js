@@ -180,7 +180,7 @@ function TaskManager(task, checker) {
 
 
     //结束一个任务
-    this.finishTask = function (canDelete) {
+    this.finishTask = function (canDelete, action) {
         if (this.finish) {
             //如果当前已经结束，就不需要处理了
             return;
@@ -190,13 +190,15 @@ function TaskManager(task, checker) {
             console.trace();
             this.logger.log("now left task " + JSON.stringify(this.taskCopy))
             //可删除的
+            console.log(action)
             temp = this.taskCopy.shift();
             this.logger.log("now left task " + JSON.stringify(this.taskCopy))
-            this.doneTask.push(temp)
+            this.doneTask.push("-----------" + action)
             this.taskFinishCallback(temp);
             this.logger.log("has done " + JSON.stringify(this.doneTask) + " left " + JSON.stringify(this.taskCopy))
             if (this.doneTask.length == this.task.tasks.length) {
                 this.allFinishCallback(this.doneTask)
+                console.log(action)
                 this.finish = true;
             }
         }
@@ -212,7 +214,8 @@ function TaskManager(task, checker) {
         "move": new MoveChecker(),
         "click": new ClickChecker(),
         "noop": new NoopChecker(),
-        "key": new KeyChecker()
+        "key": new KeyChecker(),
+        "mutil": new MutilChecker()
     };
 
     this.receive = function (action) {
@@ -223,11 +226,17 @@ function TaskManager(task, checker) {
             return;
         }
         var task = this.getTask();
-        var checkResult = this.checkers[action.type] && this.checkers[action.type].check(action, task, this, this.task)
+        //通过task区分
+        var checkResult
+        if (task.type == "mutil") {
+            checkResult = this.checkers["mutil"].check(action, task, this, this.task);
+        } else {
+            checkResult = this.checkers[action.type] && this.checkers[action.type].check(action, task, this, this.task)
+        }
         if (checkResult) {
             this.logger.log("receive action" + JSON.stringify(action));
         }
-        this.finishTask(checkResult)
+        this.finishTask(checkResult, action)
         return this;
     }
 
@@ -248,9 +257,12 @@ TaskManager.setGetAllTaskCallback = function (fn) {
  * 点击检测器
  * @constructor
  */
-function ClickChecker() {
+function ClickChecker(type) {
 
     this.logger = new BGFLogger("ClickChecker");
+
+
+    this.isCompent = type ? false : true;
 
     this.square = function (num) {
         return num * num;
@@ -264,13 +276,14 @@ function ClickChecker() {
         }
 
         //对类型进行检测
-        if (task.type != action.type) {
-            if (taskManager.getGameMode()) {//如果是在严格模式下
-                taskManager.fail("按键错误！", task, action)
+        if (this.isCompent) {
+            if (task.type != action.type) {
+                if (taskManager.getGameMode()) {//如果是在严格模式下
+                    taskManager.fail("按键错误！", task, action)
+                }
+                return false;
             }
-            return false;
         }
-
 
         //进行action与task的比对
         if (!task.data.r) {
@@ -283,7 +296,9 @@ function ClickChecker() {
                 return true;
             } else {
                 if (taskManager.getGameMode()) {
-                    taskManager.fail("点击位置错误", task, action);
+                    if (this.isCompent) {
+                        taskManager.fail("点击位置错误", task, action);
+                    }
                     return false;
                 } else {
                     return false;
@@ -305,10 +320,10 @@ function ClickChecker() {
  * 按键检测器
  * @constructor
  */
-function KeyChecker() {
+function KeyChecker(type) {
     this.logger = new BGFLogger("KeyChecker");
 
-
+    this.isCompent = type ? false : true;
     this.check = function (action, task, taskManager) {
 
         if (taskManager.finish) {
@@ -319,27 +334,70 @@ function KeyChecker() {
         //80/81/82/83
         var actionKey = action.data.key;
         var taskKey = BGFUtil.keyMap[task.data.key]
+
         if (taskManager.getGameMode()) {//严格模式
             if (task.type != action.type) {//类型不匹配
-                taskManager.fail("按键错误！", task, action)
+                if (this.isCompent) {
+                    taskManager.fail("按键错误！", task, action)
+                }
                 return false;
             } else {
                 if (actionKey == taskKey) {
                     return true;
                 } else {
-                    taskManager.fail("按键错误！", task, action)
+                    if (this.isCompent) {
+                        taskManager.fail("按键错误！", task, action)
+                    }
                     return false;
                 }
             }
         } else {
-            if (actionKey == taskKey) {
-                return true;
-            } else {
+            if (task.type != action.type) {
                 return false;
+            } else {
+                if (actionKey == taskKey) {
+                    return true;
+                } else {
+                    return false;
+                }
             }
         }
     }
 }
+
+
+/**
+ * 按键检测器
+ * @constructor
+ */
+function MutilChecker() {
+    this.logger = new BGFLogger("MutilChecker");
+
+
+    this.checkers = [new KeyChecker(1), new ClickChecker(1), new NoopChecker()]
+
+    this.check = function (action, task, taskManager, allTask) {
+
+        if (taskManager.finish) {
+            this.logger.log("task has finish and noop loop break");
+            return;
+        }
+
+
+        var findTask = task.data.subTask;
+
+        var ok = false;
+
+        for (var a = 0; a < findTask.length; a++) {
+            var tarTask = findTask[a];
+            for (var b = 0; b < this.checkers.length; b++) {
+                ok = ok || this.checkers[b].check(action, tarTask, taskManager, allTask);
+            }
+        }
+        return ok;
+    }
+}
+
 
 /**
  * 移动检测器
@@ -384,12 +442,9 @@ function NoopChecker() {
             }
             var howLong = (action.data.now - action.data.before) / 1000;
 
-            if (!task.data.r) {
-                task.data.r = 0.5;
-            }
 
             console.log("-----" + howLong)
-            if ((task.data.continue + task.data.r) < howLong || (task.data.continue - task.data.r) > howLong) {
+            if ((task.data.continue + task.data.z) < howLong || (task.data.continue - task.data.f) > howLong) {
                 taskManager.fail("操作超时，失败！" + howLong + "===", task, action)
                 return false;
             } else {

@@ -29,22 +29,164 @@
 <script cocos src="BGF.js"></script>
 <script>
     var task = {
-        "name": '训练小游戏一',
-        "continue": 6,
-        "mode": 0,
-        "resource": ["img/map.jpg", "img/111.png", "img/222.png"],
+        "name": "10",
+        "mode": 10,
+        "resource": ["img/8706b94290957aced527a0df890ce165.png", "img/0f22c37158709de5be027ce79977a3db.png", "img/6fd2ac78532d79802ebe9cb342f29e0f.jpg"],
         "view": {
-            bg: "img/map.jpg",
-            compontents: [{"img": "img/111.png", x: 100, y: 100}, {"img": "img/222.png", x: 200, y: 200}]
-        },
-        "tasks": [{"type": "click", data: {x: 100, y: 100, "continue": 5, r: 20}},
-            {"type": "key", data: {key: "Q"}}, {"type": "key", data: {key: "W"}}, {
-                "type": "noop",
-                data: {"continue": 2}
+            "bg": "img/6fd2ac78532d79802ebe9cb342f29e0f.jpg",
+            "compontents": [{
+                "version": 0,
+                "disable": false,
+                "id": 1,
+                "gameId": 1,
+                "img": "img/8706b94290957aced527a0df890ce165.png",
+                "x": 100,
+                "y": 100
             }, {
-                "type": "click",
-                data: {x: 200, y: 200, "continue": 5, r: 200}
+                "version": 0,
+                "disable": false,
+                "id": 2,
+                "gameId": 1,
+                "img": "img/0f22c37158709de5be027ce79977a3db.png",
+                "x": 200,
+                "y": 200
             }]
+        },
+        "tasks": [{
+            "version": 0,
+            "disable": false,
+            "id": 5,
+            "gameId": 1,
+            "type": "mutil",
+            "data": {
+                "id": 5,
+                "disable": false,
+                "x": 0.0,
+                "y": 0.0,
+                "r": 0.0,
+                "z": 0.0,
+                "f": 0.0,
+                "key": null,
+                "subTask": [{
+                    "version": 0,
+                    "disable": false,
+                    "id": 6,
+                    "gameId": null,
+                    "type": "click",
+                    "data": {
+                        "id": 6,
+                        "disable": false,
+                        "x": 100.0,
+                        "y": 100.0,
+                        "r": 10.0,
+                        "z": 0.0,
+                        "f": 0.0,
+                        "key": null,
+                        "subTask": [],
+                        "continue": null
+                    },
+                    "order": null
+                }, {
+                    "version": 0,
+                    "disable": false,
+                    "id": 7,
+                    "gameId": null,
+                    "type": "key",
+                    "data": {
+                        "id": 7,
+                        "disable": false,
+                        "x": 100.0,
+                        "y": 100.0,
+                        "r": 10.0,
+                        "z": 0.0,
+                        "f": 0.0,
+                        "key": "W",
+                        "subTask": [],
+                        "continue": null
+                    },
+                    "order": null
+                }, {
+                    "version": 0,
+                    "disable": false,
+                    "id": 8,
+                    "gameId": null,
+                    "type": "key",
+                    "data": {
+                        "id": 8,
+                        "disable": false,
+                        "x": 100.0,
+                        "y": 100.0,
+                        "r": 10.0,
+                        "z": 0.0,
+                        "f": 0.0,
+                        "key": "Q",
+                        "subTask": [],
+                        "continue": null
+                    },
+                    "order": null
+                }],
+                "continue": null
+            },
+            "order": null
+        }, {
+            "version": 0,
+            "disable": false,
+            "id": 9,
+            "gameId": 1,
+            "type": "key",
+            "data": {
+                "id": 9,
+                "disable": false,
+                "x": 100.0,
+                "y": 100.0,
+                "r": 10.0,
+                "z": 0.0,
+                "f": 0.0,
+                "key": "Q",
+                "subTask": [],
+                "continue": null
+            },
+            "order": null
+        }, {
+            "version": 0,
+            "disable": false,
+            "id": 10,
+            "gameId": 1,
+            "type": "noop",
+            "data": {
+                "id": 10,
+                "disable": false,
+                "x": 100.0,
+                "y": 100.0,
+                "r": 10.0,
+                "z": 0.5,
+                "f": 0.2,
+                "key": "Q",
+                "subTask": [],
+                "continue": 2
+            },
+            "order": null
+        }, {
+            "version": 0,
+            "disable": false,
+            "id": 11,
+            "gameId": 1,
+            "type": "click",
+            "data": {
+                "id": 11,
+                "disable": false,
+                "x": 200.0,
+                "y": 200.0,
+                "r": 50.0,
+                "z": 0.0,
+                "f": 0.0,
+                "key": null,
+                "subTask": [],
+                "continue": null
+            },
+            "order": null
+        }],
+        "continue": 101
     }
 
 
