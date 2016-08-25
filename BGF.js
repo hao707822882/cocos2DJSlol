@@ -140,6 +140,7 @@ function TaskManager(task, checker) {
 
     this.fail = function (reason, task, action) {
         this.finish = true;
+        console.trace();
         console.log(JSON.stringify(task) + JSON.stringify(action))
         this.failCallback(reason, task, action);
     }
@@ -249,7 +250,6 @@ function TaskManager(task, checker) {
     };
 
     this.receive = function (action) {
-        console.trace();
         //action有类型区别
         if (!this.checkers[action.type]) {
             this.logger.log("warring!  task: " + JSON.stringify(action) + "  not found checker and now pass")
@@ -257,10 +257,6 @@ function TaskManager(task, checker) {
         }
 
         var task = this.getTask();
-
-        if (action.type != "noop") {
-            console.log("action is " + JSON.stringify(action) + "task is " + JSON.stringify(task));
-        }
 
         //通过task区分
         var checkResult
@@ -272,9 +268,8 @@ function TaskManager(task, checker) {
         } else {
             checkResult = this.checkers[action.type] && this.checkers[action.type].check(action, task, this, this.task)
         }
-        if (checkResult) {
-            this.logger.log("receive action" + JSON.stringify(action));
-        }
+        this.logger.log("receive action" + JSON.stringify(action) + "task is " + JSON.stringify(task) + "result is  " + checkResult);
+
         this.finishTask(checkResult, action)
         return this;
     }
@@ -317,7 +312,7 @@ function ClickChecker(type) {
         if (task.type != action.type) {
             if (this.isCompent) {
                 if (taskManager.getGameMode()) {//如果是在严格模式下
-                    taskManager.fail("按键错误！", task, action)
+                    taskManager.fail("飞点击任务错误！", task, action)
                 }
             }
             return false;
@@ -377,7 +372,7 @@ function KeyChecker(type) {
         if (taskManager.getGameMode()) {//严格模式
             if (task.type != action.type) {//类型不匹配
                 if (this.isCompent) {
-                    taskManager.fail("按键错误！", task, action)
+                    taskManager.fail("按键错误--任务不对！", task, action)
                 }
                 return false;
             } else {
@@ -385,7 +380,7 @@ function KeyChecker(type) {
                     return true;
                 } else {
                     if (this.isCompent) {
-                        taskManager.fail("按键错误！", task, action)
+                        taskManager.fail("按键错误-非指定按键！", task, action)
                     }
                     return false;
                 }

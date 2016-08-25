@@ -191,6 +191,7 @@ $(function () {
                                 if (isStart) {
                                     taskManager.receive(taskManager.createNoopAction(beforeTime))
                                     taskManager.receive(taskManager.createMoveAction(thiss.moveX, thiss.moveY))
+                                    taskManager.receive(taskManager.createNoopAction(beforeTime))
                                     taskManager.receive(taskManager.createKey(key))
                                     beforeTime = new Date();
                                 }
@@ -205,6 +206,7 @@ $(function () {
                                 if (isStart) {
                                     taskManager.receive(taskManager.createNoopAction(beforeTime))
                                     taskManager.receive(taskManager.createMoveAction(thiss.moveX, thiss.moveY))
+                                    taskManager.receive(taskManager.createNoopAction(beforeTime))
                                     taskManager.receive(taskManager.createClick(touch._point.x, touch._point.y))
                                     beforeTime = new Date();
                                 }
