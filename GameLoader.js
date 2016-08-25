@@ -106,6 +106,23 @@ $(function () {
                                 isStart = true;
                             }
                         }, start);
+
+                        cc.eventManager.addListener({
+                            event: cc.EventListener.KEYBOARD,
+                            onKeyPressed: function (key, event) {
+                                //按键处理
+                            },
+                            onKeyReleased: function (key, event) {
+                                if (key != 32)
+                                    return;
+                                cc.director.runScene(new gameScene());
+                                taskManager = reCreateTaskManager();
+                                startTime = new Date().getTime();
+                                beforeTime = new Date().getTime();
+                                isStart = true;
+                            }
+                        }, start);
+
                     }
                 }
             );

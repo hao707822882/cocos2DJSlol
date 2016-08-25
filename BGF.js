@@ -40,7 +40,21 @@ BGFUtil.clone = function clone(obj) {
 }
 
 
-BGFUtil.keyMap = {"Q": 81, "W": 87, "E": 69, "R": 82};
+BGFUtil.keyMap = {
+    "Q": 81,
+    "W": 87,
+    "E": 69,
+    "R": 82,
+    "1": 49,
+    "2": 50,
+    "3": 51,
+    "4": 52,
+    "5": 53,
+    "6": 54,
+    "7": 55,
+    "D": 68,
+    "F": 70,
+};
 
 /**
  * 事件监听处理区
@@ -276,19 +290,25 @@ function ClickChecker(type) {
         }
 
         //对类型进行检测
-        if (this.isCompent) {
-            if (task.type != action.type) {
+        if (task.type != action.type) {
+            if (this.isCompent) {
                 if (taskManager.getGameMode()) {//如果是在严格模式下
                     taskManager.fail("按键错误！", task, action)
                 }
-                return false;
             }
+            return false;
         }
 
-        //进行action与task的比对
+
+        //如果
+        if ((task.data.x == 0 ) && (task.data.y == 0)) {
+            return true;
+        }
         if (!task.data.r) {
             task.data.r = 10;
         }
+
+
         if (task.data.r) {
             //计算距离
             var dis = Math.sqrt(this.square(action.data.x - task.data.x) + this.square(action.data.y - task.data.y))
@@ -333,6 +353,7 @@ function KeyChecker(type) {
 
         //80/81/82/83
         var actionKey = action.data.key;
+        console.log(actionKey);
         var taskKey = BGFUtil.keyMap[task.data.key]
 
         if (taskManager.getGameMode()) {//严格模式
