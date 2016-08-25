@@ -147,6 +147,8 @@ $(function () {
 
                         var thiss = this;
 
+                        thiss.moveX = 0;
+                        thiss.moveY = 0;
                         function drowCompontent(compontents, page) {
                             for (var a = 0; a < compontents.length; a++) {
                                 var c = compontents[a];
@@ -171,10 +173,9 @@ $(function () {
                                 var pos = event.getLocation(), target = event.getCurrentTarget();
                                 var nowX = pos.x;
                                 var nowY = pos.y;
-                                var oldX = target.getPositionX();
-                                var oldY = target.getPositionY();
                                 //检测移动的位置
-                                //console.log("location:  x" + nowX + "y" + nowY)
+                                thiss.moveX = nowX;
+                                thiss.moveY = nowY;
                             },
                             onMouseUp: function (event) {
                             }
@@ -189,6 +190,7 @@ $(function () {
                                 cc.log("press key " + key);
                                 if (isStart) {
                                     taskManager.receive(taskManager.createNoopAction(beforeTime))
+                                    taskManager.receive(taskManager.createMoveAction(thiss.moveX, thiss.moveY))
                                     taskManager.receive(taskManager.createKey(key))
                                     beforeTime = new Date();
                                 }
@@ -202,6 +204,7 @@ $(function () {
                             onTouchBegan: function (touch, event) {
                                 if (isStart) {
                                     taskManager.receive(taskManager.createNoopAction(beforeTime))
+                                    taskManager.receive(taskManager.createMoveAction(thiss.moveX, thiss.moveY))
                                     taskManager.receive(taskManager.createClick(touch._point.x, touch._point.y))
                                     beforeTime = new Date();
                                 }

@@ -41,10 +41,18 @@ BGFUtil.clone = function clone(obj) {
 
 
 BGFUtil.keyMap = {
+    "q": 81,
+    "w": 87,
+    "e": 69,
+    "r": 82,
+    "d": 68,
+    "f": 70,
     "Q": 81,
     "W": 87,
     "E": 69,
     "R": 82,
+    "D": 68,
+    "F": 70,
     "1": 49,
     "2": 50,
     "3": 51,
@@ -52,8 +60,7 @@ BGFUtil.keyMap = {
     "5": 53,
     "6": 54,
     "7": 55,
-    "D": 68,
-    "F": 70,
+
 };
 
 /**
@@ -170,6 +177,15 @@ function TaskManager(task, checker) {
         }
     }
 
+    //创建点击任务
+    this.createMoveAction = function (x, y) {
+        return {
+            type: "move",
+            data: {x: x, y: y}
+        }
+    }
+
+
     //创建noop beat任务
     this.createNoopBeat = function (startTime) {
         return {
@@ -239,11 +255,20 @@ function TaskManager(task, checker) {
             this.logger.log("warring!  task: " + JSON.stringify(action) + "  not found checker and now pass")
             return;
         }
+
         var task = this.getTask();
+
+        if (action.type != "noop") {
+            console.log("action is " + JSON.stringify(action) + "task is " + JSON.stringify(task));
+        }
+
         //通过task区分
         var checkResult
         if (task.type == "mutil") {
             checkResult = this.checkers["mutil"].check(action, task, this, this.task);
+            if (action.type == "noop") {
+                checkResult = this.checkers[action.type] && this.checkers[action.type].check(action, task, this, this.task)
+            }
         } else {
             checkResult = this.checkers[action.type] && this.checkers[action.type].check(action, task, this, this.task)
         }
@@ -253,7 +278,6 @@ function TaskManager(task, checker) {
         this.finishTask(checkResult, action)
         return this;
     }
-
     return this;
 }
 
@@ -325,12 +349,6 @@ function ClickChecker(type) {
                 }
             }
         }
-
-        console.log("---Click checker")
-        if (action.data.x && action.data.y && task.data.x && task.data.y) {
-            //判断范围，这边是直接相等
-            return (action.data.x == task.data.x ) && (action.data.y == task.data.y);
-        }
         return false;
     }
 }
@@ -395,7 +413,9 @@ function MutilChecker() {
     this.logger = new BGFLogger("MutilChecker");
 
 
-    this.checkers = [new KeyChecker(1), new ClickChecker(1), new NoopChecker()]
+    this.checkers = [new KeyChecker(1), new ClickChecker(1)]
+
+    this.noopChecker = new NoopChecker();
 
     this.check = function (action, task, taskManager, allTask) {
 
@@ -407,6 +427,31 @@ function MutilChecker() {
 
         var findTask = task.data.subTask;
 
+
+        function findNoopTask() {
+            for (var a = 0; a < findTask.length; a++) {
+                var task = findTask[a];
+                if (task.type == "noop") {
+                    return task
+                }
+            }
+        }
+
+        //过滤掉beat
+        if (action.type == 'noop') {
+            if (action.data.type == 'beat') {
+                return false;
+            } else {
+                var noopTask = findNoopTask();
+                if (noopTask) {
+                    return this.noopChecker.check(action, noopTask, taskManager, allTask)
+                } else {
+                    return false;
+                }
+            }
+        }
+
+        //到这边的都不是noop任务
         var ok = false;
 
         for (var a = 0; a < findTask.length; a++) {
@@ -415,24 +460,83 @@ function MutilChecker() {
                 ok = ok || this.checkers[b].check(action, tarTask, taskManager, allTask);
             }
         }
-        return ok;
+
+        if (taskManager.getGameMode()) {
+            if (!ok) {
+                taskManager.fail("执行指令错误！", action)
+                return ok
+            } else {
+                return ok;
+            }
+        } else {
+            return ok;
+        }
     }
 }
 
 
 /**
+ *
+ * 点击，移动触发
+ *
  * 移动检测器
  * @constructor
  */
-function MoveChecker() {
+function MoveChecker(type) {
 
     this.logger = new BGFLogger("MoveChecker");
 
-    //
-    this.check = function (action, task, taskManager) {
+    //是不是一组件的形式存在
+    this.isCompent = type ? false : true;
+
+    //求平方
+    this.square = function (num) {
+        return num * num;
+    }
+
+    this.check = function (action, task, taskManager, allTask) {
         //进行action与task的比对
-        console.log("---Move checker")
-        return true;
+        if (taskManager.finish) {
+            this.logger.log("task has finish and noop loop break");
+            return;
+        }
+
+
+        //对类型进行检测，不会应为类型不对，导致游戏结束
+        if (task.type != action.type) {
+            return false;
+        }
+
+
+        //如果
+        if (!task.data.r) {
+            task.data.r = 10;
+        }
+
+
+        if (task.data.r) {
+            //计算距离
+            var dis = Math.sqrt(this.square(action.data.x - task.data.x) + this.square(action.data.y - task.data.y))
+            if (dis < task.data.r) {
+                return true;
+            } else {
+                if (taskManager.getGameMode()) {
+                    if (this.isCompent) {
+                        taskManager.fail("鼠标放在了错误的位置！", task, action);
+                    }
+                    return false;
+                } else {
+                    return false;
+                }
+            }
+        }
+
+        console.log("---Click checker")
+        if (action.data.x && action.data.y && task.data.x && task.data.y) {
+            //判断范围，这边是直接相等
+            return (action.data.x == task.data.x ) && (action.data.y == task.data.y);
+        }
+        return false;
     }
 }
 

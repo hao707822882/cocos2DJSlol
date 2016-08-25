@@ -29,164 +29,80 @@
 <script cocos src="BGF.js"></script>
 <script>
     var task = {
-        "name": "10",
-        "mode": 10,
-        "resource": ["img/8706b94290957aced527a0df890ce165.png", "img/0f22c37158709de5be027ce79977a3db.png", "img/6fd2ac78532d79802ebe9cb342f29e0f.jpg"],
+        "name": "1",
+        "mode": 0,
+        "resource": [
+            "img/8706b94290957aced527a0df890ce165.png",
+            "img/6fd2ac78532d79802ebe9cb342f29e0f.jpg"
+        ],
         "view": {
             "bg": "img/6fd2ac78532d79802ebe9cb342f29e0f.jpg",
-            "compontents": [{
-                "version": 0,
-                "disable": false,
-                "id": 1,
-                "gameId": 1,
-                "img": "img/8706b94290957aced527a0df890ce165.png",
-                "x": 100,
-                "y": 100
-            }, {
-                "version": 0,
-                "disable": false,
-                "id": 2,
-                "gameId": 1,
-                "img": "img/0f22c37158709de5be027ce79977a3db.png",
-                "x": 200,
-                "y": 200
-            }]
+            "compontents": [
+                {
+                    "version": 0,
+                    "disable": false,
+                    "id": 3,
+                    "gameId": 3,
+                    "img": "img/8706b94290957aced527a0df890ce165.png",
+                    "x": 100,
+                    "y": 100
+                }, {
+                    "version": 0,
+                    "disable": false,
+                    "id": 3,
+                    "gameId": 3,
+                    "img": "img/8706b94290957aced527a0df890ce165.png",
+                    "x": 200,
+                    "y": 200
+                }
+            ]
         },
-        "tasks": [{
-            "version": 0,
-            "disable": false,
-            "id": 5,
-            "gameId": 1,
-            "type": "mutil",
-            "data": {
-                "id": 5,
+        "tasks": [
+            {
+                "version": 0,
                 "disable": false,
-                "x": 0.0,
-                "y": 0.0,
-                "r": 0.0,
-                "z": 0.0,
-                "f": 0.0,
-                "key": null,
-                "subTask": [{
-                    "version": 0,
+                "id": 14,
+                "gameId": 3,
+                "type": "click",
+                "data": {
+                    "id": 14,
                     "disable": false,
-                    "id": 6,
-                    "gameId": null,
-                    "type": "click",
-                    "data": {
-                        "id": 6,
-                        "disable": false,
-                        "x": 100.0,
-                        "y": 100.0,
-                        "r": 10.0,
-                        "z": 0.0,
-                        "f": 0.0,
-                        "key": null,
-                        "subTask": [],
-                        "continue": null
-                    },
-                    "order": null
-                }, {
-                    "version": 0,
-                    "disable": false,
-                    "id": 7,
-                    "gameId": null,
-                    "type": "key",
-                    "data": {
-                        "id": 7,
-                        "disable": false,
-                        "x": 100.0,
-                        "y": 100.0,
-                        "r": 10.0,
-                        "z": 0.0,
-                        "f": 0.0,
-                        "key": "W",
-                        "subTask": [],
-                        "continue": null
-                    },
-                    "order": null
-                }, {
-                    "version": 0,
-                    "disable": false,
-                    "id": 8,
-                    "gameId": null,
-                    "type": "key",
-                    "data": {
-                        "id": 8,
-                        "disable": false,
-                        "x": 100.0,
-                        "y": 100.0,
-                        "r": 10.0,
-                        "z": 0.0,
-                        "f": 0.0,
-                        "key": "Q",
-                        "subTask": [],
-                        "continue": null
-                    },
-                    "order": null
-                }],
-                "continue": null
+                    "x": 100.0,
+                    "y": 100.0,
+                    "r": 100.0,
+                    "z": 0.0,
+                    "f": 0.0,
+                    "key": null,
+                    "subTask": [],
+                    "continue": null
+                },
+                "order": null
             },
-            "order": null
-        }, {
-            "version": 0,
-            "disable": false,
-            "id": 9,
-            "gameId": 1,
-            "type": "key",
-            "data": {
-                "id": 9,
-                "disable": false,
-                "x": 100.0,
-                "y": 100.0,
-                "r": 10.0,
-                "z": 0.0,
-                "f": 0.0,
-                "key": "Q",
-                "subTask": [],
-                "continue": null
+            {
+                "type": "move",
+                "data": {
+                    "id": 15,
+                    "x": 200,
+                    "y": 200,
+                    "r": 50,
+                },
+                "order": null
             },
-            "order": null
-        }, {
-            "version": 0,
-            "disable": false,
-            "id": 10,
-            "gameId": 1,
-            "type": "noop",
-            "data": {
-                "id": 10,
-                "disable": false,
-                "x": 100.0,
-                "y": 100.0,
-                "r": 10.0,
-                "z": 0.5,
-                "f": 0.2,
-                "key": "Q",
-                "subTask": [],
-                "continue": 2
+            {
+                "type": "key",
+                "data": {
+                    "key": "W",
+                },
+                "order": null
             },
-            "order": null
-        }, {
-            "version": 0,
-            "disable": false,
-            "id": 11,
-            "gameId": 1,
-            "type": "click",
-            "data": {
-                "id": 11,
-                "disable": false,
-                "x": 200.0,
-                "y": 200.0,
-                "r": 50.0,
-                "z": 0.0,
-                "f": 0.0,
-                "key": null,
-                "subTask": [],
-                "continue": null
-            },
-            "order": null
-        }],
-        "continue": 101
+            {
+                "type": "key",
+                "data": {
+                    "key": "E",
+                }
+            }
+        ],
+        "continue": 100
     }
 
 
