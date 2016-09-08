@@ -10,8 +10,14 @@ var isStart = false;
 var beforeTime = null;
 var startScene = null;
 var endScene = null;
+var gameScene = null;
 var msg = "";
 
+
+var totalTimeLimit = 20 * 1000;
+
+var totalTime = 0;
+var winTimes = 0;
 
 taskManager = null;
 
@@ -28,18 +34,35 @@ function reCreateTaskManager() {
         taskManager.views[index][0].runAction(cc.FadeTo.create(0.1, 0))
         taskManager.views[index][1].runAction(cc.FadeTo.create(0.1, 0))
     }).setAllTaskFinishCallback(function () {
-        isStart = false;
-        msg = "成功" + (new Date().getTime() - startTime)
+        totalTime += (new Date().getTime() - startTime)
+        winTimes++;
+        taskManager = reCreateTaskManager();
+        startTime = new Date().getTime();
+        beforeTime = new Date().getTime();
+        isStart = true;
         cc.director.runScene(new endScene());
-        console.log("花费时间"+msg);
-    }).setFailCallback(function (m, task, action) {
-        isStart = false;
-        msg = "失败" + m + (new Date().getTime() - startTime)
-        $("#info").append($("<p>").text(JSON.stringify(task) + "×"))
-        cc.director.runScene(new endScene());
-    }).setTimeUseCallback(function () {
+        cc.director.runScene(new gameScene());
 
+    }).setFailCallback(function (m, task, action) {
+
+        totalTime += (new Date().getTime() - startTime)
+        $("#info").append($("<p>").text(JSON.stringify(task) + "×"))
+
+        taskManager = reCreateTaskManager();
+        startTime = new Date().getTime();
+        beforeTime = new Date().getTime();
+        isStart = true;
+        cc.director.runScene(new endScene());
+        cc.director.runScene(new gameScene());
+
+    }).setTimeUseCallback(function (time) {
+        var timeUse = totalTime + time;
+        if (timeUse > totalTimeLimit) {
+            cc.director.runScene(new endScene());
+            console.log(winTimes)
+        }
     })
+    window.taskManager = taskManager;
     return taskManager;
 }
 
@@ -75,6 +98,8 @@ $(function () {
                                 startTime = new Date().getTime();
                                 beforeTime = new Date().getTime();
                                 isStart = true;
+                                totalTime = 0;
+                                winTimes = 0;
                             }
                         }, start);
                     }
@@ -106,6 +131,9 @@ $(function () {
                                 startTime = new Date().getTime();
                                 beforeTime = new Date().getTime();
                                 isStart = true;
+                                //重置计时统计
+                                totalTime = 0;
+                                winTimes = 0;
                             }
                         }, end);
 
@@ -122,6 +150,9 @@ $(function () {
                                 startTime = new Date().getTime();
                                 beforeTime = new Date().getTime();
                                 isStart = true;
+                                //重置计时统计
+                                totalTime = 0;
+                                winTimes = 0;
                             }
                         }, end);
 
@@ -130,7 +161,7 @@ $(function () {
             );
 
 
-            var gameScene = cc.Scene.extend({
+            gameScene = cc.Scene.extend({
                     ctor: function () {
                         this._super();
                         this.schedule(function () {

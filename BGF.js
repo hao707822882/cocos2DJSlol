@@ -64,6 +64,37 @@ BGFUtil.keyMap = {
 };
 
 /**
+ * 创建字符精灵
+ * @param msg
+ * @param size
+ * @param font
+ * @param x
+ * @param y
+ * @returns {*}
+ */
+BGFUtil.createText = function (msg, size, font, x, y, scale) {
+    var start = new cc.LabelTTF(msg, font ? font : "Arial", size ? size : 38);
+    start.x = x;
+    start.y = y;
+    start.setScale(scale ? scale : 1);
+    return start;
+}
+
+/**
+ * 创建图片精灵
+ * @param img
+ * @param x
+ * @param y
+ * @returns {cc.Sprite}
+ */
+BGFUtil.createImg = function (img, x, y, scale) {
+    var bg = cc.Sprite.create(img);
+    bg.setPosition(x ? x : 0, y ? y : 0);
+    bg.setScale(scale ? scale : 1);
+    return bg;
+}
+
+/**
  * 事件监听处理区
  * @constructor
  */
@@ -103,10 +134,14 @@ function EventManager(taskManager) {
  */
 
 function TaskManager(task, checker) {
+
+    this.taskIndex = 0;
     this.finish = false;
     this.task = task;
     this.doneTask = [];
     this.taskCopy = BGFUtil.clone(task.tasks);
+
+    this.timeUseCallbacks = [];
 
     //获取到任务是得回调
     TaskManager.getAllTaskCallback && TaskManager.getAllTaskCallback(this.task);
@@ -116,11 +151,13 @@ function TaskManager(task, checker) {
         return this.task.mode ? this.task.mode : 0;
     }
 
-    this.allFinishCallback = function () {
+    this.allFinishCallback = function (index) {
+        console.log(index)
         this.logger.log("default allFinishCallback invoke........")
     }
 
-    this.taskFinishCallback = function (task) {
+    this.taskFinishCallback = function (task, index) {
+        console.log(index)
         this.logger.log("default taskFinishCallback invoke........")
     }
 
@@ -130,11 +167,13 @@ function TaskManager(task, checker) {
 
 
     this.timeUseCallback = function (useTime) {
-        this.logger.log("use........." + useTime)
+        for (var index = 0; index < this.timeUseCallbacks.length; index++) {
+            this.timeUseCallbacks[index](useTime);
+        }
     }
 
     this.setTimeUseCallback = function (fn) {
-        this.timeUseCallback = fn
+        this.timeUseCallbacks.push(fn)
         return this;
     }
 
@@ -225,10 +264,11 @@ function TaskManager(task, checker) {
             temp = this.taskCopy.shift();
             this.logger.log("now left task " + JSON.stringify(this.taskCopy))
             this.doneTask.push("-----------" + action)
-            this.taskFinishCallback(temp);
+            this.taskFinishCallback(temp, this.taskIndex);
             this.logger.log("has done " + JSON.stringify(this.doneTask) + " left " + JSON.stringify(this.taskCopy))
+            this.taskIndex++;
             if (this.doneTask.length == this.task.tasks.length) {
-                this.allFinishCallback(this.doneTask)
+                this.allFinishCallback(this.doneTask, this.taskIndex)
                 console.log(action)
                 this.finish = true;
             }
