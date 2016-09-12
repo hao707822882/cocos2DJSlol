@@ -18,25 +18,33 @@ taskManager = null;
 
 var gameConfig = {
     title: task.name,
-    resource: task.resource
+    resource: ["img/game/start.png", "img/game/end.png", "img/game/bg.jpg"]
 }
 
 function reCreateTaskManager() {
     var taskManager = new TaskManager(task).setTaskFinishCallback(function (task, index) {
         console.log("恭喜你，完成一个任务！" + JSON.stringify(task) + "----index " + index)
-        $("#info").append($("<p>").text(JSON.stringify(task) + "√"))
+        //$("#info").append($("<p>").text(JSON.stringify(task) + "√"))
         taskManager.views[index][0].runAction(cc.FadeTo.create(0.1, 0))
         taskManager.views[index][1].runAction(cc.FadeTo.create(0.1, 0))
     }).setAllTaskFinishCallback(function () {
+        cc.director.setDisplayStats(false);
         isStart = false;
-        msg = "成功" + (new Date().getTime() - startTime)
-        cc.director.runScene(new endScene());
-        console.log("花费时间"+msg);
+        var cost = new Date().getTime() - startTime;
+        msg = "成功:" + cost
+        var e = new endScene();
+        e.msg = msg;
+        cc.director.runScene(e);
+        BOOM.saveRank({gameId: task.id, score: cost, moduleId: task.id})
+        console.log("花费时间" + msg);
     }).setFailCallback(function (m, task, action) {
+        cc.director.setDisplayStats(false);
         isStart = false;
-        msg = "失败" + m + (new Date().getTime() - startTime)
-        $("#info").append($("<p>").text(JSON.stringify(task) + "×"))
-        cc.director.runScene(new endScene());
+        msg = "失败:" + (new Date().getTime() - startTime)
+        //  $("#info").append($("<p>").text(JSON.stringify(task) + "×"))
+        var e = new endScene();
+        e.msg = msg;
+        cc.director.runScene(e);
     }).setTimeUseCallback(function () {
 
     })
@@ -61,6 +69,13 @@ $(function () {
                     onEnter: function () {
                         this._super();
                         var size = cc.director.getWinSize();
+
+
+                        var bg = BGFUtil.createImg("img/game/bg.jpg")
+                        bg.x = size.width / 2;
+                        bg.y = size.height / 2;
+                        this.addChild(bg, 0);
+
                         var start = BGFUtil.createImg("img/game/start.png")
                         start.x = size.width / 2;
                         start.y = size.height / 2;
@@ -91,10 +106,21 @@ $(function () {
                     onEnter: function () {
                         this._super();
                         var size = cc.director.getWinSize();
+
+
+                        var bg = BGFUtil.createImg("img/game/bg.jpg")
+                        bg.x = size.width / 2;
+                        bg.y = size.height / 2;
+                        this.addChild(bg, 0);
+
                         var end = BGFUtil.createImg("img/game/end.png")
                         end.x = size.width / 2;
-                        end.y = size.height / 2;
+                        end.y = size.height / 2 - 50;
                         this.addChild(end, 0);
+
+
+                        var msg = BGFUtil.createText(this.msg, 20, null, end.x, size.height / 2)
+                        this.addChild(msg, 0);
 
                         //游戏启动
                         cc.eventManager.addListener({
@@ -154,13 +180,25 @@ $(function () {
                         thiss.moveX = 0;
                         thiss.moveY = 0;
                         function drowCompontent(task, tasks, page) {
-                            var champion = task.champion;
+                            var champion = task.championName;
                             var startX = 50;
                             var startY = 50;
                             for (var a = 0; a < tasks.length; a++) {
                                 var c = tasks[a];
                                 var nowX = startX + a * 80;
-                                var comImg = BGFUtil.createImg("img/game/" + champion + c.data.key + ".png", nowX, startY + 50)
+
+                                var temp = "";
+                                if (isNum(c.data.key)) {
+                                    temp = c.data.key + ".png";
+                                } else {
+                                    if (c.data.key == "A" || c.data.key == "a" || c.data.key == "D" || c.data.key == "d" || c.data.key == "F" || c.data.key == "f") {
+                                        temp = c.data.key.toUpperCase() + ".png";
+                                    } else {
+                                        temp = champion + c.data.key.toUpperCase() + ".png";
+                                    }
+                                }
+
+                                var comImg = BGFUtil.createImg("img/game/" + temp, nowX, startY + 50)
                                 var comText = BGFUtil.createText(c.data.key, null, null, nowX, startY, 0.6);
                                 taskViews.push([comImg, comText])
                                 page.addChild(comImg, 0);
@@ -170,7 +208,14 @@ $(function () {
                             taskManager.views = taskViews;
                         }
 
-                        var bg = cc.Sprite.create(task.view.bg);
+                        var reg = new RegExp("^[0-9]*$");
+
+                        function isNum(key) {
+                            return reg.test(key);
+                        }
+
+
+                        var bg = cc.Sprite.create("img/game/bg.jpg");
                         console.log(bg.width)
                         bg.setPosition(bg.width / 2, bg.height / 2);
 
