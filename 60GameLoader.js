@@ -214,18 +214,28 @@ $(function () {
                                 var nowX = startX + a * 80;
 
                                 var temp = "";
-                                if (isNum(c.data.key)) {
-                                    temp = c.data.key + ".png";
+                                var text = "";
+                                if (c.type == "noop") {
+                                    temp = "noop.png"
+                                    text = c.data.continue + "S";
                                 } else {
-                                    if (c.data.key == "A" || c.data.key == "a" || c.data.key == "D" || c.data.key == "d" || c.data.key == "F" || c.data.key == "f") {
-                                        temp = c.data.key.toUpperCase() + ".png";
+
+                                    if (isNum(c.data.key)) {
+                                        temp = c.data.key + ".png";
+                                        text = c.data.key;
                                     } else {
-                                        temp = champion + c.data.key.toUpperCase() + ".png";
+                                        if (c.data.key == "A" || c.data.key == "a" || c.data.key == "D" || c.data.key == "d" || c.data.key == "F" || c.data.key == "f") {
+                                            temp = c.data.key.toUpperCase() + ".png";
+                                            text = c.data.key;
+                                        } else {
+                                            temp = champion + c.data.key.toUpperCase() + ".png";
+                                            text = c.data.key;
+                                        }
                                     }
                                 }
-
                                 var comImg = BGFUtil.createImg("img/game/" + temp, nowX, startY + 50)
-                                var comText = BGFUtil.createText(c.data.key, null, null, nowX, startY, 0.6);
+                                var comText = BGFUtil.createText(text, null, null, nowX, startY, 0.6);
+
                                 taskViews.push([comImg, comText])
                                 page.addChild(comImg, 0);
                                 page.addChild(comText, 0);
