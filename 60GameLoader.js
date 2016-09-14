@@ -94,9 +94,15 @@ $(function () {
                         this.addChild(bg, 0);
 
 
+                        var start = BGFUtil.createText(task.name, 20)
+                        start.x = size.width / 2;
+                        start.y = size.height / 2 + 25;
+                        this.addChild(start, 0);
+
+
                         var start = BGFUtil.createImg("img/game/start.png")
                         start.x = size.width / 2;
-                        start.y = size.height / 2;
+                        start.y = size.height / 2 - 25;
                         this.addChild(start, 0);
                         //游戏启动
                         cc.eventManager.addListener({
