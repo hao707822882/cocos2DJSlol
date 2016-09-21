@@ -14,8 +14,6 @@ var msg = "";
 
 
 taskManager = null;
-
-
 var gameConfig = {
     title: task.name,
     resource: ["img/game/start.png", "img/game/end.png", "img/game/bg.jpg"]
@@ -132,7 +130,7 @@ $(function () {
                             event: cc.EventListener.TOUCH_ONE_BY_ONE,//单击
                             swallowTouches: true,
                             onTouchBegan: function (touch, event) {
-                                cc.director.runScene(new gameScene());
+				cc.director.runScene(new gameScene());
                                 taskManager = reCreateTaskManager();
                                 startTime = new Date().getTime();
                                 beforeTime = new Date().getTime();
@@ -194,11 +192,18 @@ $(function () {
 
                                 var temp = "";
                                 var text = "";
-                                if (c.type == "noop") {
+                                
+					
+				
+
+				if (c.type == "noop") {
                                     temp = "noop.png"
                                     text = c.data.continue + "S";
                                 } else {
-
+				
+				if(c.type!="mutil"){
+			
+				if(c.type!="click"){	
                                     if (isNum(c.data.key)) {
                                         temp = c.data.key + ".png";
                                         text = c.data.key;
@@ -211,6 +216,24 @@ $(function () {
                                             text = c.data.key;
                                         }
                                     }
+				}else{
+					temp = "noop.png";
+                                        text ="点" ;
+
+				}
+				}else{
+					if(!c.resource){
+					   temp="mutil.png";
+					  text="";
+					}else{
+						  temp="../"+c.resource;
+                                          text="";
+
+					}
+					
+				}
+
+
                                 }
                                 var comImg = BGFUtil.createImg("img/game/" + temp, nowX, startY + 50)
                                 var comText = BGFUtil.createText(text, null, null, nowX, startY, 0.6);
@@ -271,9 +294,10 @@ $(function () {
                                 cc.log("press key " + key);
                                 if (isStart) {
                                     taskManager.receive(taskManager.createNoopAction(beforeTime))
-                                    taskManager.receive(taskManager.createMoveAction(thiss.moveX, thiss.moveY))
-                                    taskManager.receive(taskManager.createNoopAction(beforeTime))
+                                   // taskManager.receive(taskManager.createMoveAction(thiss.moveX, thiss.moveY))
+                                    //taskManager.receive(taskManager.createNoopAction(beforeTime))
                                     taskManager.receive(taskManager.createKey(key))
+				    taskManager.receive(taskManager.createNoopAction(beforeTime))
                                     beforeTime = new Date();
                                 }
                             }

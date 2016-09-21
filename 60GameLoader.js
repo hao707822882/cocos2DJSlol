@@ -94,7 +94,7 @@ $(function () {
                         this.addChild(bg, 0);
 
 
-                        var start = BGFUtil.createText(task.name, 20)
+                        var start = BGFUtil.createText(task.name,20)
                         start.x = size.width / 2;
                         start.y = size.height / 2 + 25;
                         this.addChild(start, 0);
@@ -221,10 +221,14 @@ $(function () {
 
                                 var temp = "";
                                 var text = "";
+                               
+	
                                 if (c.type == "noop") {
                                     temp = "noop.png"
                                     text = c.data.continue + "S";
                                 } else {
+
+                                if(c.type!="mutil"){
 
                                     if (isNum(c.data.key)) {
                                         temp = c.data.key + ".png";
@@ -238,8 +242,18 @@ $(function () {
                                             text = c.data.key;
                                         }
                                     }
+                                }else{
+                                           temp="mutil.png";
+                                          text="";
+
                                 }
-                                var comImg = BGFUtil.createImg("img/game/" + temp, nowX, startY + 50)
+
+
+                                }
+
+	
+	
+				 var comImg = BGFUtil.createImg("img/game/" + temp, nowX, startY + 50)
                                 var comText = BGFUtil.createText(text, null, null, nowX, startY, 0.6);
 
                                 taskViews.push([comImg, comText])

@@ -263,11 +263,10 @@ function TaskManager(task, checker) {
             this.logger.log("now left task " + JSON.stringify(this.taskCopy))
             //可删除的
             console.log(action)
-            temp = this.taskCopy.shift();
-            this.logger.log("now left task " + JSON.stringify(this.taskCopy))
-            this.doneTask.push("-----------" + action)
+            temp = this.taskCopy.shift(); 
+            this.doneTask.push(action)
             this.taskFinishCallback(temp, this.taskIndex);
-            this.logger.log("has done " + JSON.stringify(this.doneTask) + " left " + JSON.stringify(this.taskCopy))
+            console.log("has done " + JSON.stringify(this.doneTask) + " ----------left------------- " + JSON.stringify(this.taskCopy))
             this.taskIndex++;
             if (this.doneTask.length == this.task.tasks.length) {
                 this.allFinishCallback(this.doneTask, this.taskIndex)
@@ -298,7 +297,11 @@ function TaskManager(task, checker) {
             return;
         }
 
-        var task = this.getTask();
+	if(this.finish){
+		return;
+	}        	
+
+	var task = this.getTask();
 
         //通过task区分
         var checkResult
@@ -344,6 +347,10 @@ function ClickChecker(type) {
     }
 
     this.check = function (action, task, taskManager) {
+
+		
+	if(action.type!="click")
+		return false;
 
         if (taskManager.finish) {
             this.logger.log("task has finish and noop loop break");
@@ -401,6 +408,9 @@ function KeyChecker(type) {
     this.isCompent = type ? false : true;
     this.check = function (action, task, taskManager) {
 
+	 if(action.type!="key")
+                return false;
+
         if (taskManager.finish) {
             this.logger.log("task has finish and noop loop break");
             return;
@@ -455,6 +465,7 @@ function MutilChecker() {
     this.noopChecker = new NoopChecker();
 
     this.check = function (action, task, taskManager, allTask) {
+
 
         if (taskManager.finish) {
             this.logger.log("task has finish and noop loop break");
@@ -532,6 +543,10 @@ function MoveChecker(type) {
     }
 
     this.check = function (action, task, taskManager, allTask) {
+
+	
+	if(action.type!="move")
+		return false;
         //进行action与task的比对
         if (taskManager.finish) {
             this.logger.log("task has finish and noop loop break");
